@@ -9,6 +9,8 @@ internal fun ThoughtBranch.canHaveNullResult() : Boolean {
 
 private fun DecisionTreeNode.checkCanEndWithNullResult(): Boolean {
     return this is BranchResultNode && this.value == BranchResult.NULL
+           //Результат перенаправляется из вызываемого графа и статически неизвестен - считаем NULL возможным
+           || this is BranchResultRedirectingNode
            //Вне зависимости от типа агрегации, узел агрегации завершает выполнение с NULL, если его ветви могут выдать NULL,
            // и если у него нет переходов по этому ключу
            || (this is AggregationNode && !this.outcomes.containsKey(BranchResult.NULL) && this.canHaveNullResult())

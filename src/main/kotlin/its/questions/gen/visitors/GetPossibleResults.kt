@@ -15,8 +15,18 @@ class GetPossibleResults : SimpleDecisionTreeBehaviour<Set<BranchResult>> {
         return possibleResults
     }
 
+    override fun process(node: ProcedureCallNode): Set<BranchResult> {
+        //Вызов процедуры не влияет на результат ветви - узел обрабатывается как обычный связующий
+        return process(node as LinkNode<Boolean>)
+    }
+
     override fun process(node: BranchResultNode): Set<BranchResult> {
         return setOf(node.value)
+    }
+
+    override fun process(node: BranchResultRedirectingNode): Set<BranchResult> {
+        //Результат приходит из вызываемого графа и статически неизвестен - считаем возможными все результаты
+        return BranchResult.entries.toSet()
     }
 
     override fun process(branch: ThoughtBranch): Set<BranchResult> {

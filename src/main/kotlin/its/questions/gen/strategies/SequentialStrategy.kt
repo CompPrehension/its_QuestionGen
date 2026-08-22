@@ -25,6 +25,7 @@ import its.questions.gen.visitors.ValueToAnswerString.toLocalizedString
 import its.questions.gen.visitors.canHaveNullResult
 import its.reasoner.nodes.DecisionTreeReasoner
 import its.reasoner.nodes.DecisionTreeReasoner.Companion.getAnswer
+import its.reasoner.nodes.DecisionTreeReasoner.Companion.solve
 import its.reasoner.operators.OperatorReasoner
 import its.reasoner.operators.OperatorReasoner.Companion.evalAs
 import java.util.*
@@ -68,6 +69,33 @@ object SequentialStrategy : QuestioningStrategyWithInfo<SequentialStrategy.Seque
 
                 override val reachableStates = listOf(redirect)
             }
+        }
+
+        override fun process(node: BranchResultRedirectingNode): QuestionState {
+            val redirect = RedirectQuestionState()
+            val branch = currentBranch
+            return object : SkipQuestionState(){
+                override fun skip(situation: QuestioningSituation): QuestionStateChange {
+                    //Результат ветви приходит из вызываемого графа, поэтому определяется рассуждателем как есть -
+                    // семантика вызова здесь не разбирается
+                    val result = branch.solve(situation.forEval()).branchResult
+                    //Выполняем действия узла
+                    node.actionExpr?.evalAs<Any?>(OperatorReasoner.defaultReasoner(situation))
+                    //Обсудили результат
+                    situation.addAssumedResult(branch, result)
+                    return QuestionStateChange(null, redirect)
+                }
+
+                override val reachableStates = listOf(redirect)
+            }
+        }
+
+        override fun process(node: ProcedureCallNode): QuestionState {
+            //Вызов процедуры не является отдельным шагом рассуждения и вопросов не порождает -
+            // узел прозрачно пропускается к следующему шагу
+            val nextState = node.outcomes[true]?.node?.use(this) ?: RedirectQuestionState()
+            nodeStates[node] = nextState
+            return nextState
         }
 
         override fun process(node: WhileCycleNode): QuestionState {

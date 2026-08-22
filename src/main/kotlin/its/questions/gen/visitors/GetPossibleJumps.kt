@@ -40,7 +40,17 @@ class GetPossibleJumps private constructor( val situation: QuestioningSituation)
         return l
     }
 
+    override fun process(node: ProcedureCallNode): List<DecisionTreeNode> {
+        //Вызов процедуры не является отдельным шагом рассуждения - узел прозрачно пропускается
+        isTransitional = true
+        return node.outcomes[true]?.node?.getPossibleJumps() ?: listOf()
+    }
+
     override fun process(node: BranchResultNode): List<DecisionTreeNode> {
+        return listOf(node)
+    }
+
+    override fun process(node: BranchResultRedirectingNode): List<DecisionTreeNode> {
         return listOf(node)
     }
 

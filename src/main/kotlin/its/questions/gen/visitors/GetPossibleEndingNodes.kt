@@ -11,7 +11,18 @@ class GetPossibleEndingNodes(
     val situation: QuestioningSituation? = null,
 ) : SimpleDecisionTreeBehaviour<GetPossibleEndingNodes.PossibleEndingNodes> {
 
-    private val correctResultingNode = situation?.forEval()?.let { branch.solve(it).resultingNode }
+    private val correctTrace = situation?.forEval()?.let { branch.solve(it) }
+
+    /**
+     * Узел данной ветви, на котором фактически завершилось ее выполнение.
+     *
+     * Определяется как последний исполненный связующий узел, т.к. следующий за ним узел завершения
+     * ([BranchResultNode] или [BranchResultRedirectingNode]) сам вопросов не порождает.
+     * Узлы вызова процедур пропускаются - они не являются отдельным шагом рассуждения.
+     */
+    private val correctEndingNode = correctTrace
+        ?.lastOrNull { it.node is LinkNode<*> && it.node !is ProcedureCallNode }
+        ?.node
 
     data class PossibleEndingNodes(
         val endingNodes: Set<DecisionTreeNode> = setOf(),
@@ -38,8 +49,8 @@ class GetPossibleEndingNodes(
 
     private fun <AnswerType : Any> getCurrentRes(node: LinkNode<AnswerType>): PossibleEndingNodes {
         return PossibleEndingNodes(
-            if (isAggregationEndingNode(node) || node.outcomes.any { it.node is BranchResultNode }) setOf(node) else setOf(),
-            if (node == correctResultingNode || node.outcomes.any { it.node is BranchResultNode && correctResultingNode == it.node }) node else null
+            if (isAggregationEndingNode(node) || node.outcomes.any { it.node is EndingNode }) setOf(node) else setOf(),
+            if (node == correctEndingNode) node else null
         )
     }
 
@@ -56,7 +67,16 @@ class GetPossibleEndingNodes(
         return childrenRes + getCurrentRes(node)
     }
 
+    override fun process(node: ProcedureCallNode): PossibleEndingNodes {
+        //Вызов процедуры не является отдельным шагом рассуждения - узел прозрачно пропускается
+        return node.outcomes[true]?.node?.use(this) ?: PossibleEndingNodes()
+    }
+
     override fun process(node: BranchResultNode): PossibleEndingNodes {
+        return PossibleEndingNodes()
+    }
+
+    override fun process(node: BranchResultRedirectingNode): PossibleEndingNodes {
         return PossibleEndingNodes()
     }
 

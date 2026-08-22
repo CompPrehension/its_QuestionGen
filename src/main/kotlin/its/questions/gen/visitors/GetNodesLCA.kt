@@ -51,7 +51,19 @@ class GetNodesLCA private constructor(val a : DecisionTreeNode, val b : Decision
         return res
     }
 
+    override fun process(node: ProcedureCallNode): Int {
+        return process(node as LinkNode<Boolean>)
+    }
+
     override fun process(node: BranchResultNode): Int {
+        return processEnding(node)
+    }
+
+    override fun process(node: BranchResultRedirectingNode): Int {
+        return processEnding(node)
+    }
+
+    private fun processEnding(node: DecisionTreeNode): Int {
         if(node == a)
             return a_found
         if(node == b)
