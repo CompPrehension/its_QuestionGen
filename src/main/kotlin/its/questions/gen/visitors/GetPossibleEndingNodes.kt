@@ -42,7 +42,7 @@ class GetPossibleEndingNodes(
     // ---------------------- Функции поведения ---------------------------
 
     override fun <AnswerType : Any> process(node: LinkNode<AnswerType>): PossibleEndingNodes {
-        val childrenRes = node.outcomes.map { it.node.use(this) }.reduce(PossibleEndingNodes::plus)
+        val childrenRes = node.outcomes.map { it.node.use(this) }.fold(PossibleEndingNodes(), PossibleEndingNodes::plus)
 
         return childrenRes + getCurrentRes(node)
     }
