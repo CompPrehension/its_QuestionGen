@@ -97,10 +97,11 @@ sealed interface Localization {
 
     companion object _static{
         @JvmStatic
-        val localizations = mapOf(
-            LocalizationRU.codePrefix to LocalizationRU,
-            LocalizationEN.codePrefix to LocalizationEN
-        )
+        val localizations: Map<String, Localization>
+            get() = mapOf(
+                LocalizationRU.codePrefix to LocalizationRU,
+                LocalizationEN.codePrefix to LocalizationEN
+            )
         @JvmStatic
         fun getLocalization(locCode : String) : Localization {
             return localizations[locCode]!!

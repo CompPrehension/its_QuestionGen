@@ -6,7 +6,8 @@ import its.questions.gen.states.QuestionState
 interface QuestioningStrategy {
     companion object _static {
         @JvmStatic
-        var defaultFullBranchStrategy : QuestioningStrategy = FullBranchStrategy
+        val defaultFullBranchStrategy: QuestioningStrategy
+            get() = FullBranchStrategy
     }
 
     fun build(branch: ThoughtBranch) : QuestionAutomata
