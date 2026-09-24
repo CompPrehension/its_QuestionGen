@@ -49,7 +49,7 @@ object LocalizationEN : Localization {
 
     override val IMPOSSIBLE_TO_FIND: String = "None can be found."
 
-    override fun ALSO_FITS_THE_CRITERIA(object_descr: String) = "$object_descr also fits the criteria"
+    override fun ALSO_FITS_THE_CRITERIA(object_descr: String) = "${object_descr.replaceFirstChar { it.uppercase() }} also fits the criteria."
 
     override fun AGGREGATION_CORRECT_EXPL(answer_descr: String, branches_descr: String): String = "You've judged the situation correctly, but in this case it means that $answer_descr because $branches_descr"
     override fun AGGREGATION_INCORRECT_BRANCHES_DESCR(branches_descr: String): String = THATS_INCORRECT_BECAUSE(branches_descr)
@@ -89,7 +89,7 @@ object LocalizationEN : Localization {
     }
 
     override fun COMPARE_A_PROPERTY(propertyName: String, objName: String, propertyVal: String): String {
-        return "Compare the value of $propertyVal of $objName with value $propertyVal"
+        return "Compare the value of $propertyName of $objName with value $propertyVal"
     }
 
     override fun CHECK_OBJ_PROPERTY_OR_CLASS(propertyName: String, objName: String): String {
@@ -138,7 +138,7 @@ object LocalizationEN : Localization {
     }
 
     override fun DEFAULT_PROP_ASSERTION(propertyName: String, objName: String, value: String): String {
-        return "the value of $propertyName $objName is $value"
+        return "the value of $propertyName of $objName is $value"
     }
 
     fun startsWithVowel(word: String): Boolean {
