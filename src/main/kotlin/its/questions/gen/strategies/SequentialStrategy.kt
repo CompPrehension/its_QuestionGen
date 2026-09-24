@@ -6,6 +6,7 @@ import its.model.nodes.visitors.DecisionTreeBehaviour
 import its.questions.gen.QuestioningSituation
 import its.questions.gen.formulations.TemplatingUtils.alias
 import its.questions.gen.formulations.TemplatingUtils.asNextStep
+import its.questions.gen.formulations.TemplatingUtils.bodyNextStepExplanation
 import its.questions.gen.formulations.TemplatingUtils.bodyNextStepQuestion
 import its.questions.gen.formulations.TemplatingUtils.description
 import its.questions.gen.formulations.TemplatingUtils.explanation
@@ -99,47 +100,28 @@ object SequentialStrategy : QuestioningStrategyWithInfo<SequentialStrategy.Seque
         }
 
         override fun process(node: WhileCycleNode): QuestionState {
-            val conditionQuestion = object : CorrectnessCheckQuestionState<Any>() {
+            fun conditionValue(situation: QuestioningSituation): Boolean =
+                node.conditionExpr.evalAs(OperatorReasoner.defaultReasoner(situation.forEval()))
+
+            val conditionQuestion = object : CorrectnessCheckQuestionState<Boolean>() {
                 override fun text(situation: QuestioningSituation): String {
                     return node.question(situation)
                 }
 
-                override fun options(situation: QuestioningSituation): List<SingleChoiceOption<Correctness<Any>>> {
-                    val answer = node.getAnswer(situation)
-                    val correctOutcome = node.outcomes[answer]!!
-                    val explText = correctOutcome.explanation(situation)
-                                   ?:node.conditionExpr.generateExplanation(situation, correctOutcome.key)
-                    return node.outcomes.map { SingleChoiceOption(
-                        it.text(situation)
-                            ?: node.conditionExpr.generateAnswer(situation, it.key)
-                            ?: it.key.toLocalizedString(situation),
+                override fun options(situation: QuestioningSituation): List<SingleChoiceOption<Correctness<Boolean>>> {
+                    val answer = conditionValue(situation)
+                    val explText = node.conditionExpr.generateExplanation(situation, answer)
+                    return listOf(true, false).map { value -> SingleChoiceOption(
+                        node.conditionExpr.generateAnswer(situation, value)
+                            ?: value.toLocalizedString(situation),
                         if(explText != null) Explanation(explText, type = ExplanationType.Error) else null,
-                        Correctness(it.key, it == correctOutcome),
+                        Correctness(value, value == answer),
                     )}
                 }
             }
 
             val bodyBranchAutomata = QuestioningStrategy.defaultFullBranchStrategy.build(node.thoughtBranch)
-            val bodyEnterState = object : SkipQuestionState(){
-                override fun skip(situation: QuestioningSituation): QuestionStateChange {
-                    situation.assumedResults.remove(node.thoughtBranch.alias)
-                    return QuestionStateChange(null, bodyBranchAutomata.initState)
-                }
-
-                override val reachableStates = listOf(bodyBranchAutomata.initState)
-
-            }
-
             val nextNodesStates = node.outcomes.associate { outcome -> outcome.key to outcome.node.use(this) }
-
-            listOf(true, false).forEach { conditionResult ->
-                conditionQuestion.linkTo (getWhileCycleNextStepAfterConditionState(
-                    node,
-                    conditionResult,
-                    bodyEnterState,
-                    nextNodesStates[BranchResult.NULL] ?: RedirectQuestionState()
-                ))
-            }
 
             val afterBodyStates = BranchResult.entries.associateWith { branchResult ->
                 getWhileCycleNextStepAfterBodyState(node, branchResult, conditionQuestion, nextNodesStates)
@@ -147,13 +129,33 @@ object SequentialStrategy : QuestioningStrategyWithInfo<SequentialStrategy.Seque
             val afterBodySkip = object : SkipQuestionState() {
                 override fun skip(situation: QuestioningSituation): QuestionStateChange {
                     val bodyResult = situation.assumedResult(node.thoughtBranch)
+                        ?: node.thoughtBranch.solve(situation).branchResult
                     return QuestionStateChange(null, afterBodyStates[bodyResult])
                 }
 
                 override val reachableStates = afterBodyStates.values
             }
-
             bodyBranchAutomata.finalize(afterBodySkip)
+
+            val bodyStart = if (bodyBranchAutomata.hasQuestions()) bodyBranchAutomata.initState else afterBodySkip
+            val bodyEnterState = object : SkipQuestionState(){
+                override fun skip(situation: QuestioningSituation): QuestionStateChange {
+                    situation.assumedResults.remove(node.thoughtBranch.alias)
+                    return QuestionStateChange(null, bodyStart)
+                }
+
+                override val reachableStates = listOf(bodyStart)
+            }
+
+            listOf(true, false).forEach { conditionResult ->
+                val nextState = getWhileCycleNextStepAfterConditionState(
+                    node,
+                    conditionResult,
+                    bodyEnterState,
+                    nextNodesStates[BranchResult.NULL] ?: RedirectQuestionState()
+                )
+                conditionQuestion.linkTo(nextState) { situation, _ -> conditionValue(situation) == conditionResult }
+            }
 
             nodeStates[node] = conditionQuestion
             return conditionQuestion
@@ -172,13 +174,12 @@ object SequentialStrategy : QuestioningStrategyWithInfo<SequentialStrategy.Seque
 
             val question = object : CorrectnessCheckQuestionState<DecisionTreeElement>() {
                 override fun text(situation: QuestioningSituation): String {
-                    return outcome?.nextStepQuestion(situation)
-                           ?: node.bodyNextStepQuestion(situation)
+                    return (if (conditionResult) node.bodyNextStepQuestion(situation) else outcome?.nextStepQuestion(situation))
                            ?: situation.localization.DEFAULT_NEXT_STEP_QUESTION
                 }
 
                 override fun options(situation: QuestioningSituation): List<SingleChoiceOption<Correctness<DecisionTreeElement>>> {
-                    val explanation = (outcome?.nextStepExplanation(situation) ?: node.bodyNextStepQuestion(situation))
+                    val explanation = (if (conditionResult) node.bodyNextStepExplanation(situation) else outcome?.nextStepExplanation(situation))
                                           ?.let{ explText -> Explanation(explText, type = ExplanationType.Error)}
                     val jumps = node.getPossibleJumps(situation)
 
@@ -328,10 +329,8 @@ object SequentialStrategy : QuestioningStrategyWithInfo<SequentialStrategy.Seque
                 override fun skip(situation: QuestioningSituation): QuestionStateChange {
                     val correctAnswer = node.getAnswer(situation)
 
-                    val explanation = Explanation(situation.localization.WE_ALREADY_DISCUSSED_THAT(
-                            node.outcomes[correctAnswer]!!
-                                .explanation(situation)!!
-                    ))
+                    val explanation = node.outcomes[correctAnswer]?.explanation(situation)
+                        ?.let { fact -> Explanation(situation.localization.WE_ALREADY_DISCUSSED_THAT(fact)) }
                     val nextState = nextSteps[correctAnswer]
                     return QuestionStateChange(explanation, nextState)
                 }
@@ -388,7 +387,7 @@ object SequentialStrategy : QuestioningStrategyWithInfo<SequentialStrategy.Seque
                                     node.aggregationMethod,
                                     node.description(situation, BranchResult.CORRECT),
                                     helper.getBranchDescriptions(situation).joinToString(", "),
-                                    it == BranchResult.CORRECT
+                                    correctAnswer == BranchResult.CORRECT
                                 )
                                 else situation.localization.SIM_AGGREGATION_NULL_EXPLANATION(
                                     helper.getBranchDescriptions(situation).joinToString(", "),
@@ -433,7 +432,8 @@ object SequentialStrategy : QuestioningStrategyWithInfo<SequentialStrategy.Seque
                     )
                     else situation.localization.NONE_OF_THE_ABOVE_APPLIES
                     val explanation = Explanation(
-                        situation.localization.THATS_INCORRECT + " " + correctBranchExplanation
+                        situation.localization.THATS_INCORRECT + " " + correctBranchExplanation,
+                        type = ExplanationType.Error,
                     )
                     return branchInfos.flatMap { branchInfo ->
                             GetPossibleResults().process(helper.getThoughtBranch(branchInfo))
@@ -532,7 +532,9 @@ object SequentialStrategy : QuestioningStrategyWithInfo<SequentialStrategy.Seque
                                 true,
                                 situation.localization.ALSO_FITS_THE_CRITERIA(objectName),
                             )
-                        }.plus(searchResult.errors.flatMap { (error, objects) -> objects.map { error to it } }
+                        }.plus(searchResult.errors.flatMap { (error, objects) ->
+                                objects.filter { it !in searchResult.correct }.map { error to it }
+                            }
                             .map { (error, obj) ->
                                 val objectName = obj.getLocalizedName(situation.domainModel, situation.localizationCode)
                                 MultipleChoiceOption(
@@ -548,16 +550,14 @@ object SequentialStrategy : QuestioningStrategyWithInfo<SequentialStrategy.Seque
                 }
             }
 
-            val emptyCycleNextSteps = node.outcomes.keys.associateWith { result -> nextStep(node, result) }
+            val emptyCycleNextSteps = BranchResult.entries.associateWith { result -> nextStep(node, result) }
 
             //далее переходим к вопросам о самой агрегации
             val aggregationQuestion = createAggregationState(node, CycleAggregationHelper(node))
             emptyCycleNextSteps.forEach { (result, nextState) ->
                 objectSelectQuestion.linkTo(nextState) { situation, _ ->
-                    val searchResult = DecisionTreeReasoner(situation).searchWithErrors(node)
-                    searchResult.correct.isEmpty()
-                            && searchResult.errors.none { (_, objects) -> objects.isNotEmpty() }
-                            && node.getAnswer(situation) == result
+                    DecisionTreeReasoner(situation).searchWithErrors(node).correct.isEmpty()
+                            && node.getAnswer(situation.forEval()) == result
                 }
             }
             objectSelectQuestion.linkTo(aggregationQuestion) { _, _ -> true }
@@ -661,7 +661,7 @@ object SequentialStrategy : QuestioningStrategyWithInfo<SequentialStrategy.Seque
                 }
 
                 override fun options(situation: QuestioningSituation): List<SingleChoiceOption<Correctness<DecisionTreeNode>>> {
-                    val jumps = branch.start.getPossibleJumps(situation)
+                    val jumps = listOf(branch.start) + branch.start.getPossibleJumps(situation)
 
                     return jumps.filter { it !is BranchResultNode}.map{
                         SingleChoiceOption(

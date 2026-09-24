@@ -60,7 +60,7 @@ class CheckPropertyContext(
     override fun generate(learningSituation: LearningSituation, localization: Localization): String? {
         val question = propertyDef.metadata.getString(localization.codePrefix, "question")
         val contextVars = mutableMapOf(
-            "obj" to objExpr.use(OperatorReasoner.defaultReasoner(learningSituation))!!
+            "object" to objExpr.use(OperatorReasoner.defaultReasoner(learningSituation))!!
         )
         paramsMap.forEach { (paramName, operator) ->
             contextVars[paramName] = operator.use(OperatorReasoner.defaultReasoner(learningSituation))!!
@@ -87,7 +87,7 @@ class CheckPropertyContext(
         val value = obj.findIn(learningSituation.domainModel)!!.getPropertyValue(propertyDef.name, params)
         if (assertion != null) {
             val contextVars = mutableMapOf(
-                "obj" to obj,
+                "object" to obj,
                 "value" to value
             )
             contextVars.putAll(params)

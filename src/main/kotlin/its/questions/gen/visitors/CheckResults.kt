@@ -27,3 +27,14 @@ internal fun AggregationNode.canHaveNullResult(): Boolean {
         is CycleAggregationNode -> true //всегда могут быть не найдены удовлетворяющие условию объекты
     }
 }
+
+internal fun LinkNode<*>.possibleResults(): Set<BranchResult> {
+    return when (this) {
+        is BranchAggregationNode -> thoughtBranches.flatMap { GetPossibleResults().process(it) }
+            .filter { it != BranchResult.NULL }.toSet()
+            .plus(if (canHaveNullResult()) setOf(BranchResult.NULL) else emptySet())
+        is CycleAggregationNode -> GetPossibleResults().process(thoughtBranch).plus(BranchResult.NULL)
+        is WhileCycleNode -> GetPossibleResults().process(thoughtBranch).plus(BranchResult.NULL)
+        else -> BranchResult.entries.toSet()
+    }
+}

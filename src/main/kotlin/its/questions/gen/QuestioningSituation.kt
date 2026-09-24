@@ -1,5 +1,6 @@
 package its.questions.gen
 
+import its.model.DomainSolvingModel
 import its.model.definition.DomainModel
 import its.model.definition.types.Obj
 import its.model.nodes.BranchResult
@@ -23,6 +24,22 @@ class QuestioningSituation : LearningSituation{
         assumedResults: MutableMap<String, BranchResult> = mutableMapOf(),
         localizationCode: String = "RU"
     ) : super(model, variables)
+    {
+        this.discussedVariables = discussedVariables
+        this.givenAnswers = givenAnswers
+        this.assumedResults = assumedResults
+        this.localizationCode = localizationCode
+    }
+
+    constructor(
+        model: DomainModel,
+        variables: MutableMap<String, Obj>,
+        discussedVariables : MutableMap<String, String>,
+        givenAnswers: MutableMap<Int, Int>,
+        assumedResults: MutableMap<String, BranchResult>,
+        localizationCode: String,
+        solvingContext: DomainSolvingModel?,
+    ) : super(model, variables, solvingContext)
     {
         this.discussedVariables = discussedVariables
         this.givenAnswers = givenAnswers
@@ -57,7 +74,8 @@ class QuestioningSituation : LearningSituation{
     fun forEval(): LearningSituation {
         return LearningSituation(
             domainModel.copy(),
-            decisionTreeVariables.toMutableMap()
+            decisionTreeVariables.toMutableMap(),
+            solvingContext
         )
     }
 

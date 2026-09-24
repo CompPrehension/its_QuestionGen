@@ -13,6 +13,7 @@ import its.model.nodes.*
 import its.questions.gen.QuestioningSituation
 import its.questions.gen.formulations.v2.generation.GigaChatAPI
 import its.questions.gen.formulations.v2.generation.QuestionGeneratorFabric
+import its.questions.gen.visitors.declaredVariableTypes
 import its.reasoner.LearningSituation
 import padeg.lib.Padeg
 
@@ -20,7 +21,9 @@ object TemplatingUtils {
 
     @JvmStatic
     fun DomainDefWithMeta<*>.getLocalizedName(localizationCode : String) : String {
-        return  this.metadata[localizationCode, "localizedName"].toString()
+        return this.metadata[localizationCode, "localizedName"]
+            ?.toString()
+            ?: throw IllegalArgumentException("'$this' doesn't have a $localizationCode localized name")
     }
 
     @JvmStatic
@@ -126,6 +129,11 @@ object TemplatingUtils {
     }
 
     @JvmStatic
+    internal fun DecisionTreeNode.hasQuestion(situation: QuestioningSituation) : Boolean {
+        return getMeta(situation.localizationCode, "question") is String
+    }
+
+    @JvmStatic
     internal fun DecisionTreeNode.question(situation: QuestioningSituation) : String {
         val localizationCode = situation.localizationCode
         return getMeta(localizationCode, "question")
@@ -150,7 +158,7 @@ object TemplatingUtils {
                 getMeta(localizationCode, "question")
                     ?.let { it as? String }
                     ?.interpretTopLevel(situation, localizationCode)
-                ?: expr.generateQuestion(situation)
+                ?: expr.generateQuestion(situation, decisionTree.declaredVariableTypes())
                ).stringCheck("Node '$this' doesn't have a $localizationCode associated question")
 
     }
@@ -246,7 +254,7 @@ object TemplatingUtils {
     @JvmStatic
     internal fun FindErrorCategory.explanation(situation: QuestioningSituation, entityAlias : String) : String {
         val localizationCode = situation.localizationCode
-        return getMeta(localizationCode, "explanation")!!
+        return getMeta(localizationCode, "explanation")
             .stringCheck("FindErrorCategory '$this' doesn't have a $localizationCode explanation")
             .interpretTopLevel(situation, localizationCode, mapOf("checked" to Obj(entityAlias)))
     }
@@ -302,8 +310,8 @@ object TemplatingUtils {
             .interpretTopLevel(situation ,localizationCode)
     }
 
-    private fun Operator.generateQuestion(situation: QuestioningSituation) : String? {
-        return QuestionGeneratorFabric(situation, situation.localization)
+    private fun Operator.generateQuestion(situation: QuestioningSituation, declaredVariableTypes: Map<String, String>) : String? {
+        return QuestionGeneratorFabric(situation, situation.localization, declaredVariableTypes)
             .getContext(this)
             ?.generate(situation, situation.localization)
     }

@@ -1,11 +1,11 @@
 package its.questions.gen.strategies
 
-import its.model.Utils.nullCheck
 import its.model.definition.types.Obj
 import its.model.nodes.*
 import its.questions.gen.QuestioningSituation
 import its.questions.gen.formulations.TemplatingUtils.explanation
 import its.questions.gen.formulations.TemplatingUtils.getLocalizedName
+import its.questions.gen.formulations.TemplatingUtils.hasQuestion
 import its.questions.gen.formulations.TemplatingUtils.question
 import its.questions.gen.states.*
 import its.questions.gen.visitors.getUsedVariables
@@ -65,17 +65,16 @@ object VariableValueStrategy : QuestioningStrategy {
 
                 override fun options(situation: QuestioningSituation): List<SingleChoiceOption<Correctness<Obj?>>> {
                     val answer = declarationNode.getAnswer(situation)
-                    val explanation = situation.localization.IN_THIS_SITUATION(
-                        fact = declarationNode.outcomes[answer]!!.explanation(situation)!!
-                    )
+                    val explanation = declarationNode.outcomes[answer]?.explanation(situation)
+                        ?.let { fact -> situation.localization.IN_THIS_SITUATION(fact = fact) }
 
                     val possibleObjects = DecisionTreeReasoner(situation).processWithErrors(declarationNode)
                     val options = possibleObjects.errors.map { (error, objects) ->
-                        objects.map{
+                        objects.filter { it !in possibleObjects.correct }.map{
                             SingleChoiceOption<Correctness<Obj?>>(
                                 it.getLocalizedName(situation.domainModel, situation.localizationCode),
                                 Explanation(
-                                    "${error.explanation(situation, it.objectName)} $explanation",
+                                    listOfNotNull(error.explanation(situation, it.objectName), explanation).joinToString(" "),
                                     type = ExplanationType.Error
                                 ),
                                 Correctness(it, false)
@@ -95,14 +94,12 @@ object VariableValueStrategy : QuestioningStrategy {
                         .filterNotNull()
                         .plus(
                             SingleChoiceOption<Correctness<Obj?>>(
-                            if(declarationNode.nextIfNone != null)
-                                declarationNode.nextIfNone!!.explanation(situation)
-                                        .nullCheck("'none' outcome for Find Action Node $declarationNode has no ${situation.localizationCode} explanation.")
-                                        .capitalize()
-                            else
-                                situation.localization.IMPOSSIBLE_TO_FIND
-                            ,
-                            Explanation("${situation.localization.THATS_INCORRECT} $explanation", type = ExplanationType.Error),
+                            declarationNode.nextIfNone?.explanation(situation)?.capitalize()
+                                ?: situation.localization.IMPOSSIBLE_TO_FIND,
+                            Explanation(
+                                listOfNotNull(situation.localization.THATS_INCORRECT, explanation).joinToString(" "),
+                                type = ExplanationType.Error
+                            ),
                                 Correctness(null, possibleObjects.correct.isEmpty())
                         ))
 
@@ -118,7 +115,8 @@ object VariableValueStrategy : QuestioningStrategy {
                     //TODO этот скип предполагался как повторный заход в это состояние - если несколько переменных зависят от текущей - но в этом случае скорее всего будут создаваться лишние состояния
                     // TODO
                     if(situation.discussedVariables.containsKey(varInfo.name)
-                        || !currentBranch.solve(situation).containsWithNested(declarationNode)
+                        || !declarationNode.hasQuestion(situation)
+                        || !currentBranch.solve(situation.forEval()).containsWithNested(declarationNode)
                         || options(situation).isEmpty()){
                         return QuestionStateChange(null, nextState)
                     }

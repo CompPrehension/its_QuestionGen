@@ -53,7 +53,7 @@ object LocalizationRU : Localization {
     override val IMPOSSIBLE_TO_FIND: String = "Невозможно найти."
     override fun ALSO_FITS_THE_CRITERIA(object_descr: String) = "${object_descr.replaceFirstChar { it.uppercase() }} тоже удовлетворяет условию."
 
-    override fun AGGREGATION_CORRECT_EXPL(answer_descr: String, branches_descr: String): String = "Вы верно оценили ситуацию, однако это значит, что $answer_descr - из-за того, что $branches_descr"
+    override fun AGGREGATION_CORRECT_EXPL(answer_descr: String, branches_descr: String): String = "Вы верно оценили ситуацию, однако это значит, что $answer_descr - из-за того, что $branches_descr."
     override fun AGGREGATION_INCORRECT_BRANCHES_DESCR(branches_descr: String): String = THATS_INCORRECT_BECAUSE(branches_descr)
     override fun AGGREGATION_MISSED_BRANCHES_DESCR_PRIMARY(branches_descr: String): String = "Это неверно, поскольку вы не упомянули, что $branches_descr - это влияет на ситуацию в данном случае."
     override fun AGGREGATION_MISSED_BRANCHES_DESCR_CONCAT(branches_descr: String): String = "Вы также не упомянули, что $branches_descr - это влияет на ситуацию в данном случае."
@@ -74,11 +74,12 @@ object LocalizationRU : Localization {
 
     private val morphology = RussianLuceneMorphology()
 
+    // для <= и >= описание инвертировано
     private val operatorMap = mapOf(
         CompareWithComparisonOperator.ComparisonOperator.Greater to "Больше ли",
-        CompareWithComparisonOperator.ComparisonOperator.LessEqual to "Меньше ли",
+        CompareWithComparisonOperator.ComparisonOperator.LessEqual to "Больше ли",
         CompareWithComparisonOperator.ComparisonOperator.Less to "Меньше ли",
-        CompareWithComparisonOperator.ComparisonOperator.GreaterEqual to "Больше ли"
+        CompareWithComparisonOperator.ComparisonOperator.GreaterEqual to "Меньше ли"
     )
 
     private val genderToEqualOpMap = mapOf(

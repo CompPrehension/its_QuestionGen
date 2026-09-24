@@ -94,7 +94,7 @@ open class CompareWithConstantContext(
         val question = propertyDef.metadata.getString(localization.codePrefix, "compareValueQuestion")
         val obj = objExpr.use(OperatorReasoner.defaultReasoner(learningSituation)) as Obj
         val contextVars = mutableMapOf(
-            "obj" to obj,
+            "object" to obj,
             "value" to valueConstant.value
         )
         paramsMap.forEach { (paramName, operator) ->
@@ -128,7 +128,7 @@ open class CompareWithConstantContext(
         val value = obj.findIn(learningSituation.domainModel)!!.getPropertyValue(propertyDef.name, params)
         if (assertion != null) {
             val contextVars = mutableMapOf(
-                "obj" to obj,
+                "object" to obj,
                 "value" to value
             )
             contextVars.putAll(params)

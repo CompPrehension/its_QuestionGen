@@ -9,7 +9,11 @@ import its.questions.gen.formulations.v2.generation.constant.CompareWithNumeric
 import its.questions.gen.formulations.v2.generation.constant.CompareWithString
 import its.reasoner.LearningSituation
 
-class QuestionGeneratorFabric(val learningSituation: LearningSituation, val localization: Localization) {
+class QuestionGeneratorFabric(
+    val learningSituation: LearningSituation,
+    val localization: Localization,
+    val declaredVariableTypes: Map<String, String> = emptyMap(),
+) {
 
     private val generators = listOf(
         CompareWithBoolean(learningSituation, localization),
@@ -19,7 +23,7 @@ class QuestionGeneratorFabric(val learningSituation: LearningSituation, val loca
         CheckPropertyQuestionGeneration(learningSituation, localization),
         CompareWithPropertyOfDiffObj(learningSituation, localization),
         CheckExistenceOfRelationship(learningSituation, localization),
-        CheckObjectClass(learningSituation, localization)
+        CheckObjectClass(learningSituation, localization, declaredVariableTypes)
     )
 
     fun getContext(operator : Operator) : AbstractContext? {

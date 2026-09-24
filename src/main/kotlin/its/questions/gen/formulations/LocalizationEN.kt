@@ -51,7 +51,7 @@ object LocalizationEN : Localization {
 
     override fun ALSO_FITS_THE_CRITERIA(object_descr: String) = "${object_descr.replaceFirstChar { it.uppercase() }} also fits the criteria."
 
-    override fun AGGREGATION_CORRECT_EXPL(answer_descr: String, branches_descr: String): String = "You've judged the situation correctly, but in this case it means that $answer_descr because $branches_descr"
+    override fun AGGREGATION_CORRECT_EXPL(answer_descr: String, branches_descr: String): String = "You've judged the situation correctly, but in this case it means that $answer_descr because $branches_descr."
     override fun AGGREGATION_INCORRECT_BRANCHES_DESCR(branches_descr: String): String = THATS_INCORRECT_BECAUSE(branches_descr)
     override fun AGGREGATION_MISSED_BRANCHES_DESCR_PRIMARY(branches_descr: String): String = "That's incorrect, because you did not consider that $branches_descr - this matters in this case."
     override fun AGGREGATION_MISSED_BRANCHES_DESCR_CONCAT(branches_descr: String): String = "You also did not consider that $branches_descr - this matters in this case."
@@ -61,22 +61,23 @@ object LocalizationEN : Localization {
         branchesDescription: String,
         isCorrect: Boolean,
     ): String =
-        "That's incorrect. In order to determine if $aggregationDescription, " + "${if (aggregationMethod == AggregationMethod.AND) "all" else "at least one"} of the factors mentioned " + "(${branchesDescription}) should apply. " + "And in this case they ${if (isCorrect) "do" else "don't"}"
+        "That's incorrect. In order to determine if $aggregationDescription, " + "${if (aggregationMethod == AggregationMethod.AND) "all" else "at least one"} of the factors mentioned " + "(${branchesDescription}) should apply. " + "And in this case they ${if (isCorrect) "do" else "don't"}."
 
     override fun SIM_AGGREGATION_NULL_EXPLANATION(branchesDescription: String): String =
-        "That's incorrect, because in this case none of the factors mentioned (${branchesDescription}) " + "have no effect, which means that no determined result can be decided on this stage."
+        "That's incorrect, because in this case none of the factors mentioned (${branchesDescription}) " + "affect the decision, which means that no definite result can be determined at this stage."
 
     override fun COMPARE_A_PROPERTY_TO_A_CONSTANT(propertyName: String, objName: String, propertyVal: String) : String {
         return "Is $propertyName of $objName equal to $propertyVal?"
     }
 
+    // для <= и >= описание инвертировано
     private val operatorMap = mapOf(
         CompareWithComparisonOperator.ComparisonOperator.Equal to "equal to",
         CompareWithComparisonOperator.ComparisonOperator.NotEqual to "equal to",
-        CompareWithComparisonOperator.ComparisonOperator.GreaterEqual to "greater than",
+        CompareWithComparisonOperator.ComparisonOperator.GreaterEqual to "less than",
         CompareWithComparisonOperator.ComparisonOperator.Greater to "greater than",
         CompareWithComparisonOperator.ComparisonOperator.Less to "less than",
-        CompareWithComparisonOperator.ComparisonOperator.LessEqual to "less than"
+        CompareWithComparisonOperator.ComparisonOperator.LessEqual to "greater than"
     )
 
     override fun COMPARE_A_PROPERTY_TO_A_NUMERIC_CONST(

@@ -8,6 +8,7 @@ import its.model.definition.types.Obj
 import its.model.definition.types.ObjectType
 import its.model.expressions.Operator
 import its.model.expressions.literals.ClassLiteral
+import its.model.expressions.literals.DecisionTreeVarLiteral
 import its.model.expressions.operators.CheckClass
 import its.model.expressions.operators.GetClass
 import its.questions.gen.formulations.Localization
@@ -17,8 +18,11 @@ import its.questions.gen.formulations.v2.AbstractContext
 import its.reasoner.LearningSituation
 import its.reasoner.operators.OperatorReasoner
 
-class CheckObjectClass(learningSituation: LearningSituation, localization: Localization) :
-    AbstractQuestionGeneration(learningSituation, localization) {
+class CheckObjectClass(
+    learningSituation: LearningSituation,
+    localization: Localization,
+    private val declaredVariableTypes: Map<String, String> = emptyMap(),
+) : AbstractQuestionGeneration(learningSituation, localization) {
 
     override fun fits(operator: Operator): CheckClassContext? {
         if (operator is CheckClass && operator.classExpr is ClassLiteral) {
@@ -26,8 +30,9 @@ class CheckObjectClass(learningSituation: LearningSituation, localization: Local
             return CheckClassContext(operator.objectExpr, operator, classDef)
         }
         if (operator is GetClass) {
-            val objectType = operator.objectExpr.resolvedType(learningSituation) as ObjectType
-            val classDef = objectType.findIn(learningSituation.domainModel)
+            val declaredClassName = (operator.objectExpr as? DecisionTreeVarLiteral)?.let { declaredVariableTypes[it.name] }
+            val classDef = declaredClassName?.let { ClassRef(it).findIn(learningSituation.domainModel) }
+                ?: (operator.objectExpr.resolvedType(learningSituation) as ObjectType).findIn(learningSituation.domainModel)
             return CheckClassContext(operator.objectExpr, operator, classDef)
         }
         return null

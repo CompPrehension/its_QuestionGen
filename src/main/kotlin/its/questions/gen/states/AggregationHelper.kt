@@ -81,11 +81,14 @@ class CycleAggregationHelper(node: CycleAggregationNode) : AggregationHelper<Cyc
 
     override fun getBranchDescription(situation: QuestioningSituation, branchInfo: Obj, result: BranchResult): String {
         val varName = node.variable.varName
-        val alreadyContains = situation.decisionTreeVariables.containsKey(varName)
+        val previousValue = situation.decisionTreeVariables[varName]
         situation.decisionTreeVariables[varName] = branchInfo
-        val description = node.thoughtBranch.description(situation, result)
-        if (alreadyContains) situation.decisionTreeVariables.remove(varName)
-        return description
+        try {
+            return node.thoughtBranch.description(situation, result)
+        } finally {
+            if (previousValue != null) situation.decisionTreeVariables[varName] = previousValue
+            else situation.decisionTreeVariables.remove(varName)
+        }
     }
 
     override fun getBranchResult(situation: QuestioningSituation, branchInfo: Obj): BranchResult {

@@ -26,7 +26,7 @@ class RedirectQuestionState : QuestionState(){
     var redir: QuestionState? = null
         set(value){
             var r = value
-            while(r is RedirectQuestionState){
+            while(r is RedirectQuestionState && r.redirectsTo() != null){
                 r = r.redirectsTo()
             }
             field = r

@@ -26,7 +26,7 @@ class CompareWithPropertyOfDiffObj(learningSituation: LearningSituation, localiz
         ) {
             val getPropVal1 = operator.firstExpr as GetPropertyValue
             val getPropVal2 = operator.secondExpr as GetPropertyValue
-            if (!getPropVal1.paramsValues.getExprList().isEmpty() && !getPropVal2.paramsValues.getExprList().isEmpty()) {
+            if (!getPropVal1.paramsValues.getExprList().isEmpty() || !getPropVal2.paramsValues.getExprList().isEmpty()) {
                 return null
             }
             val objectType1 = getPropVal1.objectExpr.resolvedType(learningSituation) as ObjectType
@@ -35,7 +35,7 @@ class CompareWithPropertyOfDiffObj(learningSituation: LearningSituation, localiz
 
             val objectType2 = getPropVal2.objectExpr.resolvedType(learningSituation) as ObjectType
             val classDef2 = objectType2.findIn(learningSituation.domainModel)
-            val propertyDef2 = classDef2.findPropertyDef(getPropVal1.propertyName)!!
+            val propertyDef2 = classDef2.findPropertyDef(getPropVal2.propertyName)!!
 
             if (propertyDef1 == propertyDef2) {
                 return ComparePropertyOfDiffObjContext(
@@ -46,14 +46,17 @@ class CompareWithPropertyOfDiffObj(learningSituation: LearningSituation, localiz
         }
         if (operator is Compare && operator.firstExpr is GetPropertyValue && operator.secondExpr is GetPropertyValue) {
             val getPropVal1 = operator.firstExpr as GetPropertyValue
+            val getPropVal2 = operator.secondExpr as GetPropertyValue
+            if (!getPropVal1.paramsValues.getExprList().isEmpty() || !getPropVal2.paramsValues.getExprList().isEmpty()) {
+                return null
+            }
             val objectType1 = getPropVal1.objectExpr.resolvedType(learningSituation) as ObjectType
             val classDef1 = objectType1.findIn(learningSituation.domainModel)
             val propertyDef1 = classDef1.findPropertyDef(getPropVal1.propertyName)!!
 
-            val getPropVal2 = operator.secondExpr as GetPropertyValue
             val objectType2 = getPropVal2.objectExpr.resolvedType(learningSituation) as ObjectType
             val classDef2 = objectType2.findIn(learningSituation.domainModel)
-            val propertyDef2 = classDef2.findPropertyDef(getPropVal1.propertyName)!!
+            val propertyDef2 = classDef2.findPropertyDef(getPropVal2.propertyName)!!
 
             if (propertyDef1 == propertyDef2) {
                 return ComparePropertyOfDiffObjContext(
@@ -130,7 +133,7 @@ class ComparePropertyOfDiffObjContext(
         val assertion1 = propertyDef.metadata.getString(localization.codePrefix, "assertion")
 
         val contextVars = mutableMapOf(
-            "obj" to objExpr1.use(OperatorReasoner.defaultReasoner(learningSituation))!!
+            "object" to objExpr1.use(OperatorReasoner.defaultReasoner(learningSituation))!!
         )
         contextVars["value"] = (objExpr1.use(OperatorReasoner.defaultReasoner(learningSituation)) as Obj)
             .findIn(learningSituation.domainModel)!!
@@ -139,7 +142,7 @@ class ComparePropertyOfDiffObjContext(
 
         val interpretedAssertion1 = assertion1?.interpret(learningSituation, localization.codePrefix, contextVars)
 
-        contextVars["obj"] = objExpr2.use(OperatorReasoner.defaultReasoner(learningSituation))!!
+        contextVars["object"] = objExpr2.use(OperatorReasoner.defaultReasoner(learningSituation))!!
         contextVars["value"] = (objExpr2.use(OperatorReasoner.defaultReasoner(learningSituation)) as Obj)
             .findIn(learningSituation.domainModel)!!
             .getPropertyValue(propertyDef.name)

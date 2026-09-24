@@ -67,7 +67,7 @@ class AggregationQuestionState<Node : AggregationNode, BranchInfo>(
             result != BranchResult.NULL && result != results[branch]
         }.keys
         val missedBranches = givenAnswer.filter { (branch, result) ->
-            result == BranchResult.NULL &&
+            result == BranchResult.NULL && results[branch] != BranchResult.NULL &&
                     !(node.aggregationMethod == AggregationMethod.AND && nodeRes == BranchResult.ERROR
                             && results[branch] == BranchResult.CORRECT) &&
                     !(node.aggregationMethod == AggregationMethod.OR && nodeRes == BranchResult.CORRECT
@@ -105,7 +105,8 @@ class AggregationQuestionState<Node : AggregationNode, BranchInfo>(
 
         val isAnswerCorrect = incorrectBranches.isEmpty() && missedBranches.isEmpty()
         return QuestionStateChange(
-            Explanation(explanationText, type = ExplanationType.Error), getStateFromLinks(situation, isAnswerCorrect)
+            Explanation(explanationText, type = if (isAnswerCorrect) ExplanationType.Success else ExplanationType.Error),
+            getStateFromLinks(situation, isAnswerCorrect)
         )
     }
 
@@ -133,7 +134,10 @@ class AggregationQuestionState<Node : AggregationNode, BranchInfo>(
                                 branch,
                                 branchResults[branch]!!
                             )),
-                            Explanation(situation.localization.LETS_FIGURE_IT_OUT, shouldPause = false),
+                            if (branchAutomata[helper.getThoughtBranch(branch)]!!.hasQuestions())
+                                Explanation(situation.localization.LETS_FIGURE_IT_OUT, shouldPause = false)
+                            else
+                                null,
                             branch
                         )
                     }

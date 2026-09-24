@@ -49,13 +49,18 @@ class GetPossibleEndingNodes(
 
     private fun <AnswerType : Any> getCurrentRes(node: LinkNode<AnswerType>): PossibleEndingNodes {
         return PossibleEndingNodes(
-            if (isAggregationEndingNode(node) || node.outcomes.any { it.node is EndingNode }) setOf(node) else setOf(),
+            if (endsWithMissingOutcome(node) || node.outcomes.any { it.node.isConclusion() }) setOf(node) else setOf(),
             if (node == correctEndingNode) node else null
         )
     }
 
-    private fun isAggregationEndingNode(node: LinkNode<*>): Boolean {
-        return node is AggregationNode && !node.outcomes.keys.containsAll(BranchResult.entries)
+    private fun DecisionTreeNode.isConclusion(): Boolean {
+        return this is BranchResultNode || this is BranchResultRedirectingNode
+    }
+
+    private fun endsWithMissingOutcome(node: LinkNode<*>): Boolean {
+        return (node is AggregationNode || node is WhileCycleNode)
+               && node.possibleResults().any { !node.outcomes.containsKey(it) }
     }
 
     override fun process(node: FindActionNode): PossibleEndingNodes {
