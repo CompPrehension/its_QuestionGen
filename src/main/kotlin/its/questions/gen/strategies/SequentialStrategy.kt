@@ -541,11 +541,26 @@ object SequentialStrategy : QuestioningStrategyWithInfo<SequentialStrategy.Seque
                             })
                     return options
                 }
+
+                override fun preliminarySkip(situation: QuestioningSituation): QuestionStateChange? {
+                    if (options(situation).isNotEmpty()) return null
+                    return QuestionStateChange(null, getStateFromLinks(situation, emptyList()))
+                }
             }
+
+            val emptyCycleNextSteps = node.outcomes.keys.associateWith { result -> nextStep(node, result) }
 
             //далее переходим к вопросам о самой агрегации
             val aggregationQuestion = createAggregationState(node, CycleAggregationHelper(node))
-            objectSelectQuestion.linkTo(aggregationQuestion)
+            emptyCycleNextSteps.forEach { (result, nextState) ->
+                objectSelectQuestion.linkTo(nextState) { situation, _ ->
+                    val searchResult = DecisionTreeReasoner(situation).searchWithErrors(node)
+                    searchResult.correct.isEmpty()
+                            && searchResult.errors.none { (_, objects) -> objects.isNotEmpty() }
+                            && node.getAnswer(situation) == result
+                }
+            }
+            objectSelectQuestion.linkTo(aggregationQuestion) { _, _ -> true }
             nodeStates[node] = objectSelectQuestion
             return objectSelectQuestion
         }
