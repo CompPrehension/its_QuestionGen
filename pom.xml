@@ -6,7 +6,7 @@
 
     <groupId>com.github.CompPrehension</groupId>
     <artifactId>its_QuestionGen</artifactId>
-    <version>3.0.0-rc.2</version>
+    <version>3.0.0-rc.3</version>
     <packaging>jar</packaging>
 
     <name>QuestionGen</name>
@@ -177,12 +177,12 @@
         <dependency>
             <groupId>com.github.CompPrehension</groupId>
             <artifactId>its_DomainModel</artifactId>
-            <version>3.0.0-rc.2</version>
+            <version>3.0.0-rc.3</version>
         </dependency>
         <dependency>
             <groupId>com.github.CompPrehension</groupId>
             <artifactId>its_Reasoner</artifactId>
-            <version>3.0.0-rc.3</version>
+            <version>3.0.0-rc.4</version>
         </dependency>
         <dependency>
             <groupId>com.github.CompPrehension</groupId>
