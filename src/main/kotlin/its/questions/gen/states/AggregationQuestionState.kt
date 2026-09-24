@@ -36,11 +36,13 @@ class AggregationQuestionState<Node : AggregationNode, BranchInfo>(
     override fun getQuestion(situation: QuestioningSituation): QuestionStateResult {
         val text = text(situation).prependId()
         val options = helper.getBranchDescriptions(situation)
-        val matchingOptions = mapOf(
-            BranchResult.CORRECT to situation.localization.TRUE,
-            BranchResult.ERROR to situation.localization.FALSE,
-        ).apply { if(helper.getThoughtBranches().any { it.canHaveNullResult() })
-            plus(BranchResult.NULL to node.nullFormulation(situation))
+        val matchingOptions = buildMap {
+            put(BranchResult.CORRECT, situation.localization.TRUE)
+            put(BranchResult.ERROR, situation.localization.FALSE)
+
+            if (helper.getThoughtBranches().any { it.canHaveNullResult() }) {
+                put(BranchResult.NULL, node.nullFormulation(situation))
+            }
         }
         return Question(
             text,
