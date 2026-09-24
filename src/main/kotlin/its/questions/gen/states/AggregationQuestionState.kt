@@ -83,7 +83,7 @@ class AggregationQuestionState<Node : AggregationNode, BranchInfo>(
             explanationText =
                 situation.localization.AGGREGATION_INCORRECT_BRANCHES_DESCR(incorrectBranches.joinToString(", ") { branch ->
                     helper.getBranchDescription(situation, branch, results[branch]!!)
-                }) + situation.localization.AGGREGATION_MISSED_BRANCHES_DESCR_CONCAT(missedBranches.joinToString(", ") { branch ->
+                }) + " " + situation.localization.AGGREGATION_MISSED_BRANCHES_DESCR_CONCAT(missedBranches.joinToString(", ") { branch ->
                     helper.getBranchDescription(situation, branch, results[branch]!!)
                 })
         } else if (incorrectBranches.isNotEmpty()) {
@@ -93,7 +93,7 @@ class AggregationQuestionState<Node : AggregationNode, BranchInfo>(
                 })
         } else if (missedBranches.isNotEmpty()) {
             explanationText =
-                situation.localization.AGGREGATION_MISSED_BRANCHES_DESCR_PRIMARY(incorrectBranches.joinToString(", ") { branch ->
+                situation.localization.AGGREGATION_MISSED_BRANCHES_DESCR_PRIMARY(missedBranches.joinToString(", ") { branch ->
                     helper.getBranchDescription(situation, branch, results[branch]!!)
                 })
         } else {
