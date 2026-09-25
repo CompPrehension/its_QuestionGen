@@ -257,6 +257,7 @@ object TemplatingUtils {
         return getMeta(localizationCode, "explanation")
             .stringCheck("FindErrorCategory '$this' doesn't have a $localizationCode explanation")
             .interpretTopLevel(situation, localizationCode, mapOf("checked" to Obj(entityAlias)))
+            .capitalize()
     }
 
     @JvmStatic

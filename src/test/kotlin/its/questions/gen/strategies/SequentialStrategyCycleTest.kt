@@ -97,7 +97,7 @@ class SequentialStrategyCycleTest {
         val right = state.proceedWithAnswer(situation, listOf(question.indexOf("чашка"), question.indexOf("книга")))
 
         // Assert.
-        assertEquals(Explanation("Это неверно.\nКнига тоже удовлетворяет условию.\nваза не лежит в коробке.", ExplanationType.Error), wrong.explanation)
+        assertEquals(Explanation("Это неверно.\nКнига тоже удовлетворяет условию.\nВаза не лежит в коробке.", ExplanationType.Error), wrong.explanation)
         assertEquals(Explanation("Верно.", ExplanationType.Success, shouldPause = false), right.explanation)
     }
 

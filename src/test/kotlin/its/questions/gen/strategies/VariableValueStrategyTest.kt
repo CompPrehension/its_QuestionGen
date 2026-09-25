@@ -93,7 +93,7 @@ class VariableValueStrategyTest {
         val right = automata.initState.proceedWithAnswer(rightSituation, listOf(question.indexOf("коробка")))
 
         // Assert.
-        assertEquals(Explanation("гиря тяжелее, чем ваза. В данной ситуации коробка легче, чем ваза.", ExplanationType.Error), wrong.explanation)
+        assertEquals(Explanation("Гиря тяжелее, чем ваза. В данной ситуации коробка легче, чем ваза.", ExplanationType.Error), wrong.explanation)
         assertEquals(Explanation("Это неверно. В данной ситуации коробка легче, чем ваза.", ExplanationType.Error), none.explanation)
         assertEquals(Explanation("Верно.", ExplanationType.Success, shouldPause = false), right.explanation)
         assertEquals(mapOf("Y" to "c"), wrongSituation.discussedVariables)
@@ -321,7 +321,7 @@ class VariableValueStrategyTest {
 
         // Assert.
         assertEquals(listOf("гиря", "ваза", "Невозможно найти."), question.optionTexts())
-        assertEquals(Explanation("гиря слишком тяжелая.", ExplanationType.Error), wrongObject.explanation)
+        assertEquals(Explanation("Гиря слишком тяжелая.", ExplanationType.Error), wrongObject.explanation)
         assertEquals(Explanation("Это неверно.", ExplanationType.Error), impossible.explanation)
     }
 

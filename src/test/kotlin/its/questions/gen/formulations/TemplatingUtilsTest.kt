@@ -435,7 +435,7 @@ class TemplatingUtilsTest {
         val text = category.explanation(situation, "a")
 
         // Assert.
-        assertEquals("ваза слишком тяжелая, в отличие от мяча", text)
+        assertEquals("Ваза слишком тяжелая, в отличие от мяча", text)
     }
 
     /** Категория ошибки поиска без объяснения - ошибка с понятным сообщением. */
