@@ -33,6 +33,8 @@ object LocalizationEN : Localization {
     override val LETS_FIGURE_IT_OUT = "Let's figure it out."
     override fun WE_CAN_CONCLUDE_THAT(result: String): String  = "We can conclude that $result."
     override fun SO_WEVE_DISCUSSED_WHY(result: String): String = "So, we've discussed why $result."
+    override fun SO_WEVE_DISCUSSED_WHY_ALL(results: List<String>): String =
+        "So, we've discussed ${enumerate(results.map { "why $it" }, "and")}."
     override fun WE_ALREADY_DISCUSSED_THAT(fact: String): String = "We have already seen that $fact."
     override val WHICH_IS_TRUE_HERE = "Which is true in this situation?"
     override val NONE_OF_THE_ABOVE_APPLIES = "None of the above"

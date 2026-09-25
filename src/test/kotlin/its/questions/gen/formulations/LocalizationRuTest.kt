@@ -61,6 +61,11 @@ class LocalizationRuTest {
         // Act & Assert.
         assertEquals("Можно заключить, что ваза хрупкая.", LocalizationRU.WE_CAN_CONCLUDE_THAT("ваза хрупкая"))
         assertEquals("Итак, мы обсудили, почему ваза хрупкая.", LocalizationRU.SO_WEVE_DISCUSSED_WHY("ваза хрупкая"))
+        assertEquals("Итак, мы обсудили, почему ваза хрупкая.", LocalizationRU.SO_WEVE_DISCUSSED_WHY_ALL(listOf("ваза хрупкая")))
+        assertEquals("Итак, мы обсудили, почему ваза хрупкая и почему её нельзя отправить.",
+            LocalizationRU.SO_WEVE_DISCUSSED_WHY_ALL(listOf("ваза хрупкая", "её нельзя отправить")))
+        assertEquals("Итак, мы обсудили, почему ваза хрупкая, почему её нельзя упаковать и почему её нельзя отправить.",
+            LocalizationRU.SO_WEVE_DISCUSSED_WHY_ALL(listOf("ваза хрупкая", "её нельзя упаковать", "её нельзя отправить")))
         assertEquals("Мы уже говорили о том, что ваза хрупкая.", LocalizationRU.WE_ALREADY_DISCUSSED_THAT("ваза хрупкая"))
         assertEquals("Необходимо проверить, что ваза хрупкая", LocalizationRU.WE_NEED_TO_CHECK_THAT("ваза хрупкая"))
     }

@@ -111,5 +111,8 @@ class CycleAggregationHelper(node: CycleAggregationNode) : AggregationHelper<Cyc
 
     override fun onGoIntoBranch(situation: QuestioningSituation, branchInfo: Obj) {
         situation.decisionTreeVariables[node.variable.varName] = branchInfo
+        val assumedResult = getAssumedResult(branchInfo, situation)
+        if (assumedResult != null) situation.addAssumedResult(node.thoughtBranch, assumedResult)
+        else situation.assumedResults.remove(node.thoughtBranch.alias)
     }
 }

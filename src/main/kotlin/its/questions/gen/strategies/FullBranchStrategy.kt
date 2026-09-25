@@ -74,9 +74,10 @@ object FullBranchStrategy : QuestioningStrategy {
         val redir = RedirectQuestionState()
         val branchEnd = object : SkipQuestionState() {
             override fun skip(situation: QuestioningSituation): QuestionStateChange {
-                val explanation = Explanation(situation.localization.SO_WEVE_DISCUSSED_WHY(
-                    branch.description(situation, branch.solve(situation.forEval()).branchResult)
-                )
+                val result = branch.description(situation, branch.solve(situation.forEval()).branchResult)
+                val explanation = Explanation(
+                    situation.localization.SO_WEVE_DISCUSSED_WHY(result),
+                    discussedResults = listOf(result),
                 )
                 return QuestionStateChange(explanation, redir)
             }

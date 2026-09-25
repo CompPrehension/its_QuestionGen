@@ -6,7 +6,7 @@
 
     <groupId>com.github.CompPrehension</groupId>
     <artifactId>its_QuestionGen</artifactId>
-    <version>3.0.0-rc.5</version>
+    <version>3.0.0-rc.6</version>
     <packaging>jar</packaging>
 
     <name>QuestionGen</name>

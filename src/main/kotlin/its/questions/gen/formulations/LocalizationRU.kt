@@ -35,6 +35,8 @@ object LocalizationRU : Localization {
     override val LETS_FIGURE_IT_OUT = "Давайте разберемся."
     override fun WE_CAN_CONCLUDE_THAT(result: String): String  = "Можно заключить, что $result."
     override fun SO_WEVE_DISCUSSED_WHY(result: String): String = "Итак, мы обсудили, почему $result."
+    override fun SO_WEVE_DISCUSSED_WHY_ALL(results: List<String>): String =
+        "Итак, мы обсудили, ${enumerate(results.map { "почему $it" }, "и")}."
     override fun WE_ALREADY_DISCUSSED_THAT(fact: String): String = "Мы уже говорили о том, что $fact."
 
     override val WHICH_IS_TRUE_HERE = "Что из перечисленного применимо в данной ситуации?"

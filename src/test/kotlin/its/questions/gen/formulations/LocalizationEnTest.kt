@@ -58,6 +58,11 @@ class LocalizationEnTest {
         // Act & Assert.
         assertEquals("We can conclude that the vase is fragile.", LocalizationEN.WE_CAN_CONCLUDE_THAT("the vase is fragile"))
         assertEquals("So, we've discussed why the vase is fragile.", LocalizationEN.SO_WEVE_DISCUSSED_WHY("the vase is fragile"))
+        assertEquals("So, we've discussed why the vase is fragile.", LocalizationEN.SO_WEVE_DISCUSSED_WHY_ALL(listOf("the vase is fragile")))
+        assertEquals("So, we've discussed why the vase is fragile and why it cannot be sent.",
+            LocalizationEN.SO_WEVE_DISCUSSED_WHY_ALL(listOf("the vase is fragile", "it cannot be sent")))
+        assertEquals("So, we've discussed why the vase is fragile, why it cannot be packed and why it cannot be sent.",
+            LocalizationEN.SO_WEVE_DISCUSSED_WHY_ALL(listOf("the vase is fragile", "it cannot be packed", "it cannot be sent")))
         assertEquals("We have already seen that the vase is fragile.", LocalizationEN.WE_ALREADY_DISCUSSED_THAT("the vase is fragile"))
         assertEquals("We need to check if the vase is fragile", LocalizationEN.WE_NEED_TO_CHECK_THAT("the vase is fragile"))
     }

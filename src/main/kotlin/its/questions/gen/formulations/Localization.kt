@@ -34,6 +34,7 @@ sealed interface Localization {
     val LETS_FIGURE_IT_OUT: String
     fun WE_CAN_CONCLUDE_THAT(result: String): String
     fun SO_WEVE_DISCUSSED_WHY(result: String): String
+    fun SO_WEVE_DISCUSSED_WHY_ALL(results: List<String>): String
     fun WE_ALREADY_DISCUSSED_THAT(fact: String): String
 
     val WHICH_IS_TRUE_HERE: String
@@ -107,4 +108,9 @@ sealed interface Localization {
             return localizations[locCode]!!
         }
     }
+}
+
+internal fun enumerate(items: List<String>, conjunction: String): String {
+    return if (items.size <= 1) items.joinToString("")
+    else items.dropLast(1).joinToString(", ") + " $conjunction " + items.last()
 }

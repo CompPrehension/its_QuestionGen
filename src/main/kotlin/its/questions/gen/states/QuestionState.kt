@@ -146,7 +146,8 @@ enum class ExplanationType{
 data class Explanation(
     val text : String,
     val type: ExplanationType = ExplanationType.Continue,
-    val shouldPause: Boolean = true
+    val shouldPause: Boolean = true,
+    val discussedResults: List<String> = emptyList(),
 )
 
 data class QuestionStateChange(

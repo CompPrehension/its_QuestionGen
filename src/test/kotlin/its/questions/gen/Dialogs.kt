@@ -2,17 +2,17 @@ package its.questions.gen
 
 import its.questions.gen.QuestionGenFixtures.indexOf
 import its.questions.gen.QuestionGenFixtures.matchingTexts
+import its.questions.gen.dialog.DialogDriver
 import its.questions.gen.states.Explanation
 import its.questions.gen.states.Question
 import its.questions.gen.states.QuestionState
-import its.questions.gen.states.QuestionStateChange
 import its.questions.gen.states.QuestionType
 import kotlin.test.fail
 
 /**
- * Прохождение автомата вопросов:
- * у состояния берется вопрос, на него дается ответ, по изменению состояния выполняется переход;
- * пропуски состояний (без вопроса) проходятся сразу. Прохождение заканчивается, когда следующего состояния нет.
+ * Прохождение автомата вопросов шагами [DialogDriver]:
+ * на каждый вопрос дается ответ, пропуски состояний (без вопроса) драйвер проходит сам.
+ * Прохождение заканчивается, когда диалог окончен.
  *
  * Результат - текстовая стенограмма диалога:
  * `? текст вопроса`, варианты `  - вариант`, столбцы сопоставления `  = столбец`, данный ответ `> ответ`
@@ -65,20 +65,15 @@ object Dialogs {
     fun walk(start: QuestionState, situation: QuestioningSituation, answerer: (Question) -> List<Int>): Transcript {
         val lines = mutableListOf<String>()
         val questions = mutableListOf<Question>()
-        var state: QuestionState = start
+        var step = DialogDriver.resume(start, situation)
         repeat(MAX_STEPS) {
-            val change = when (val result = state.getQuestion(situation)) {
-                is QuestionStateChange -> result
-                is Question -> {
-                    questions.add(result)
-                    lines.addAll(describe(result))
-                    val answer = answerer(result)
-                    lines.add("> " + describeAnswer(result, answer))
-                    state.proceedWithAnswer(situation, answer)
-                }
-            }
-            change.explanation?.let { lines.add(describe(it)) }
-            state = change.nextState ?: return Transcript(lines, questions)
+            lines.addAll(step.explanations.map(::describe))
+            val question = step.question ?: return Transcript(lines, questions)
+            questions.add(question)
+            lines.addAll(describe(question))
+            val answer = answerer(question)
+            lines.add("> " + describeAnswer(question, answer))
+            step = DialogDriver.answer(step.state!!, situation, answer)
         }
         fail("dialog did not finish in $MAX_STEPS steps:\n" + lines.joinToString("\n"))
     }

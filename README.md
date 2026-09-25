@@ -65,6 +65,20 @@ QuestioningSituation questioningSituation = new QuestioningSituation(situationMo
 QuestionAutomata questionAutomata = ... ;
 QuestioningSituation = ... ;
 
+DialogStep step = DialogDriver.start(questionAutomata, questioningSituation);
+while (true) {
+    //Объяснения, накопленные до вопроса (или до конца диалога), в порядке выдачи
+    handleExplanations(step.getExplanations());
+    if (step.isFinished()) {
+        break;
+    }
+    //<Как-то получаем ответы пользователя на вопрос step.getQuestion()>
+    List<Integer> answers = handleQuestion(step.getQuestion());
+    step = DialogDriver.answer(step.getState(), questioningSituation, answers);
+}
+
+
+// ниже устаревший способ наводящих диалогов
 QuestionState currentState = questionAutomata.getInitState();  
 while (currentState != null) {  
     QuestionStateResult stateResult = currentState.getQuestion(questioningSituation);  
@@ -82,8 +96,9 @@ while (currentState != null) {
         //<Как-то обрабатываем объяснение о переходе к след. вопросу>  
         handleExplanation(stateChange.getExplanation());  
         currentState = stateChange.getNextState();  
-    }  
+    }
 }
 ```
-
-
+`DialogDriver` сам проходит состояния без вопросов, поэтому шаг всегда заканчивается либо вопросом, либо концом диалога.
+Если диалог ведется по запросам (например, в веб-приложении), между шагами достаточно сохранить ситуацию и `step.getState().getId()`,
+а продолжить диалог - через `DialogDriver.resume(questionAutomata.get(stateId), questioningSituation)`.

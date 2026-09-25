@@ -4,6 +4,7 @@ import ConsoleView
 import its.model.DomainSolvingModel
 import its.model.definition.loqi.DomainLoqiBuilder
 import its.model.nodes.BranchResult
+import its.questions.gen.dialog.DialogDriver
 import its.questions.gen.states.*
 import its.questions.gen.strategies.QuestioningStrategy
 import java.io.File
@@ -37,29 +38,16 @@ fun run() {
 
     val situation = QuestioningSituation(situationDomain)
     situation.addAssumedResult(model.decisionTree.mainBranch, BranchResult.CORRECT)
-    var state: QuestionState? = automata.initState
-//    state = automata[94]
+    var step = DialogDriver.start(automata, situation)
+//    step = DialogDriver.resume(automata[94], situation)
 //    situation.addAssumedResult(DomainModel.decisionTree.getByAlias("right") as ThoughtBranch, true)
-    while(state != null){
-        val out = state.getQuestion(situation)
-        lateinit var change : QuestionStateChange
-        var printed = false
-        when(out){
-            is Question -> {
-                val answers = out.ask()
-                printed = true
-                change = state.proceedWithAnswer(situation, answers)
-            }
-            is QuestionStateChange ->{
-                change = out
-            }
-        }
-        state = change.nextState
-        if(change.explanation != null){
-            println(change.explanation!!.text)
-            printed = true
-        }
-        if(printed) println()
+    while(true){
+        step.explanations.forEach { println(it.text) }
+        if(step.explanations.isNotEmpty()) println()
+        val question = step.question ?: break
+        val answers = question.ask()
+        println()
+        step = DialogDriver.answer(step.state!!, situation, answers)
     }
 
     //val q = QuestionGenerator(dir + "_$input\\")
