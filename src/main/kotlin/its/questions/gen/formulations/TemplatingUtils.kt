@@ -28,7 +28,7 @@ object TemplatingUtils {
 
     @JvmStatic
     fun <T : DomainDefWithMeta<T>> DomainRef<T>.getLocalizedName(domainModel : DomainModel, localizationCode : String) : String {
-        return this.findInOrUnkown(domainModel).getLocalizedName(localizationCode)
+        return this.findInOrUnknown(domainModel).getLocalizedName(localizationCode)
     }
 
     @JvmStatic

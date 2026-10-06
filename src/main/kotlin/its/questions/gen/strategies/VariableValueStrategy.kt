@@ -12,6 +12,8 @@ import its.questions.gen.visitors.getUsedVariables
 import its.reasoner.nodes.DecisionTreeReasoner
 import its.reasoner.nodes.DecisionTreeReasoner.Companion.getAnswer
 import its.reasoner.nodes.DecisionTreeReasoner.Companion.solve
+import java.util.Locale
+import java.util.Locale.getDefault
 
 object VariableValueStrategy : QuestioningStrategy {
     private data class VariableInfo(
@@ -94,7 +96,8 @@ object VariableValueStrategy : QuestioningStrategy {
                         .filterNotNull()
                         .plus(
                             SingleChoiceOption<Correctness<Obj?>>(
-                            declarationNode.nextIfNone?.explanation(situation)?.capitalize()
+                                declarationNode.nextIfNone?.explanation(situation)
+                                    ?.replaceFirstChar { if (it.isLowerCase()) it.titlecase(getDefault()) else it.toString() }
                                 ?: situation.localization.IMPOSSIBLE_TO_FIND,
                             Explanation(
                                 listOfNotNull(situation.localization.THATS_INCORRECT, explanation).joinToString(" "),
